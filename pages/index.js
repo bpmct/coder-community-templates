@@ -46,6 +46,7 @@ export default function Home({ templates }) {
                           target="_blank"
                           rel="noreferrer"
                           className={styles.card}
+                          key={template.location}
                       >
                         <h2>{template.name}</h2>
                         <p>
