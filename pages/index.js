@@ -31,6 +31,7 @@ export default function Home({ templates }) {
             <a
                 href="https://github.com/coder/coder/blob/main/examples/templates/community-templates.md"
                 target="_blank"
+                rel="noreferrer"
             >
               <code className={styles.code}>community-templates.md</code>
             </a>
@@ -43,6 +44,7 @@ export default function Home({ templates }) {
                       <a
                           href={template.location}
                           target="_blank"
+                          rel="noreferrer"
                           className={styles.card}
                       >
                         <h2>{template.name}</h2>
