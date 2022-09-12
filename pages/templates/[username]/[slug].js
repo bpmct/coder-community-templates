@@ -1,51 +1,47 @@
 import Head from "next/head";
 import Image from "next/image";
 
-import Box from "@mui/material/Box";
-import Card from "@mui/material/Card";
+import { useState } from "react";
+
 import Container from "@mui/material/Container";
-import Grid from "@mui/material/Grid";
-
-import Avatar from "@mui/material/Avatar";
-import Chip from "@mui/material/Chip";
-import Stack from "@mui/material/Stack";
-
-import CardActions from "@mui/material/CardActions";
-import CardContent from "@mui/material/CardContent";
-import Button from "@mui/material/Button";
-import Typography from "@mui/material/Typography";
-import Modal from "@mui/material/Modal";
-
-import { onlyUnique } from "../../../utils/helpers";
+import { TextField } from "@mui/material";
+import Link from "next/link";
 
 export async function getStaticPaths() {
   const res = await fetch(`${process.env.ACCESS_URL}/api/templates`);
-
-  const usernames = res.map((template) => ({
-    username: template.ownerDetails.name,
-    slug: template.slug,
-  }));
+  const data = await res.json();
 
   return {
-    paths: [{ params: { id: "1" } }, { params: { id: "2" } }],
+    paths: data.map((template) => ({
+      params: {
+        username: template.publisherDetails.name,
+        slug: template.slug,
+      },
+    })),
     fallback: false, // can also be true or 'blocking'
   };
 }
 
 export async function getStaticProps(context) {
   const res = await fetch(`${process.env.ACCESS_URL}/api/templates`);
-  // console.log(await res.text())
   const data = await res.json();
+
+  const { username, slug } = context.params;
+
+  const templateDetails = data.find(
+    (template) =>
+      username == template.publisherDetails.name && slug == template.slug
+  );
 
   return {
     props: {
-      templates: data,
+      templateDetails,
     },
-    revalidate: 300,
+    revalidate: 600,
   };
 }
 
-export default function Home({ templates }) {
+export default function Home({ templateDetails }) {
   return (
     <div>
       <Head>
@@ -55,85 +51,43 @@ export default function Home({ templates }) {
       </Head>
 
       <Container maxWidth="lg">
-        <h1>Coder Templates</h1>
-
-        <p>
-          Generated from{" "}
-          <a
-            href="https://github.com/coder/coder/blob/main/examples/templates/community-templates.md"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <code>community-templates.md</code>
-          </a>
-        </p>
-
-        <Grid
-          container
-          spacing={2}
-          columns={{ xs: 4, md: 12 }}
-          alignItems="stretch"
-          alignContent="stretch"
-        >
-          {templates &&
-            templates.map((template) => {
-              return (
-                <Grid item xs={2} md={4} key={template.path}>
-                  <Card
-                    variant="outlined"
-                    style={{
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                    }}
-                  >
-                    <CardContent>
-                      <Stack direction="row" spacing={1}>
-                        <Chip
-                          avatar={
-                            <Avatar
-                              alt={template.publisherDetails.name}
-                              src={template.publisherDetails.avatar}
-                            />
-                          }
-                          label={template.publisherDetails.name}
-                        />
-                      </Stack>
-                      <Typography variant="h5" component="div">
-                        {template.slug}
-                      </Typography>
-                      <Typography sx={{ mb: 1.5 }} color="text.secondary">
-                        {template.type == "community"
-                          ? "Community template"
-                          : "Official template"}
-                      </Typography>
-                      <Typography variant="body2">
-                        {template.description}
-                      </Typography>
-                    </CardContent>
-                    <CardActions style={{ marginTop: "auto" }}>
-                      <Button size="small">Use template</Button>
-                      <Button size="small">GitHub</Button>
-                    </CardActions>
-                  </Card>
-                </Grid>
-              );
-            })}
-        </Grid>
-      </Container>
-
-      <footer>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{" "}
-          <span>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
+        <h1>
+          {templateDetails.publisherDetails.name}/{templateDetails.slug}
+        </h1>
+        {templateDetails.description ? (
+          <p>{templateDetails.description}</p>
+        ) : null}
+        <a href={templateDetails.url} target="_blank" rel="noreferrer">
+          <code>View on GitHub</code>
         </a>
-      </footer>
+        <h2>Providers used</h2>
+        {templateDetails.providers.map((provider, i) => {
+          return <li key={i}>{provider}</li>;
+        })}
+
+        <h2>Add this template</h2>
+
+        <p>Coder templates are meant to be adapted/modified:</p>
+
+        <TextField
+          id="outlined-multiline-static"
+          label="shell"
+          multiline
+          rows={8}
+          style={{ minWidth: "50%" }}
+          value={templateDetails.command}
+          onFocus={(event) => {
+            event.target.select();
+          }}
+          readOnly
+        />
+
+        <footer style={{ marginTop: "30px" }}>
+          <Link href="/">
+            <a>Go back</a>
+          </Link>
+        </footer>
+      </Container>
     </div>
   );
 }

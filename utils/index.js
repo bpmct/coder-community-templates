@@ -57,13 +57,14 @@ export const findTemplates = async (repositories) => {
         slug: repo.split("/")[1],
         url: `https://github.com/${repo}`,
         path: `${repo}/${defaultBranch}`,
+        repo: repo.split("/")[1],
         type,
         publisherDetails,
       });
     } else {
       const templatesFound = response.tree.filter(
         (item) =>
-          item.path.includes(".tf") &&
+          item.path.includes("main.tf") &&
           // hides other Terraform stuff inside coder/coder
           !item.path.includes("provisioner/terraform")
       );
@@ -79,12 +80,15 @@ export const findTemplates = async (repositories) => {
           slug,
           url: `https://github.com/${repo}/tree/${defaultBranch}/${location}`,
           path: `${repo}/${defaultBranch}/${location}`,
+          repo: repo.split("/")[1],
+          location: location,
           type,
           publisherDetails,
         });
       }
     }
   }
+
   return files;
 };
 // Fetch the template name, description, tags,
@@ -108,7 +112,14 @@ const hydrateTemplate = async (template) => {
     ([provider]) => provider != "coder"
   );
 
-  return { ...template, ...frontmatter, providers };
+  // Generate command to use template
+  let command = `git clone https://github.com/${template.publisherDetails.name}/${template.repo}\ncd ${template.repo}`;
+  if (template.location) {
+    command += `/${template.location}`;
+  }
+  command += "\ncoder templates create";
+
+  return { ...template, ...frontmatter, command, providers };
 };
 export const hydrateTemplates = async (templatesList) => {
   let hydratedTemplates = [];

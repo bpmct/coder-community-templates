@@ -6,6 +6,10 @@ import Card from "@mui/material/Card";
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid";
 
+import Link from "next/link";
+
+import { Link as MaterialLink } from "@mui/material";
+
 import Avatar from "@mui/material/Avatar";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
@@ -96,8 +100,19 @@ export default function Home({ templates }) {
                       </Typography>
                     </CardContent>
                     <CardActions style={{ marginTop: "auto" }}>
-                      <Button size="small">Use template</Button>
-                      <Button size="small">GitHub</Button>
+                      <Link
+                        href={`/templates/${template.publisherDetails.name}/${template.slug}`}
+                      >
+                        <Button size="small">Use template</Button>
+                      </Link>
+                      <Button
+                        href={template.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        size="small"
+                      >
+                        GitHub
+                      </Button>
                     </CardActions>
                   </Card>
                 </Grid>
