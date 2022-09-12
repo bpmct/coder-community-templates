@@ -16,6 +16,22 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 
+import { onlyUnique } from "../../../utils/helpers";
+
+export async function getStaticPaths() {
+  const res = await fetch(`${process.env.ACCESS_URL}/api/templates`);
+
+  const usernames = res.map((template) => ({
+    username: template.ownerDetails.name,
+    slug: template.slug,
+  }));
+
+  return {
+    paths: [{ params: { id: "1" } }, { params: { id: "2" } }],
+    fallback: false, // can also be true or 'blocking'
+  };
+}
+
 export async function getStaticProps(context) {
   const res = await fetch(`${process.env.ACCESS_URL}/api/templates`);
   // console.log(await res.text())

@@ -1,9 +1,8 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import parseFrontMatter from "front-matter";
 import parseTerraform from "@evops/hcl-terraform-parser";
 
 // Fetch contents of file
-const fetchContents = async (url, type) => {
+export const fetchContents = async (url, type) => {
   const usernames = await fetch(url, {
     headers: {
       // Authorize with GitHub, just in case
@@ -19,14 +18,12 @@ const fetchContents = async (url, type) => {
     return data;
   }
 };
-
 // Finds repos from Markdown links in text
 // @example: "lorem ipsum [link](https://github.com/coder/coder) long text" -> ["coder/coder"]
-const findRepositories = (text) => {
+export const findRepositories = (text) => {
   const urlRegex = /((?<=\(https:\/\/github.com\/)[^\s]+?(?=\)))/g;
   return text.match(urlRegex);
 };
-
 // Gets default branch of repo
 // @example: "repo/repo" -> "main"
 const getRepoDetails = async (repo) => {
@@ -36,9 +33,8 @@ const getRepoDetails = async (repo) => {
   );
   return response;
 };
-
 // Finds Coder templates inside repositories, recursively
-const findTemplates = async (repositories) => {
+export const findTemplates = async (repositories) => {
   let files = [];
   for (const repo of repositories) {
     const repoDetails = await getRepoDetails(repo);
@@ -91,10 +87,8 @@ const findTemplates = async (repositories) => {
   }
   return files;
 };
-
 // Fetch the template name, description, tags,
 // providers
-
 // TODO: also find resources used
 const hydrateTemplate = async (template) => {
   // Find the name, tags, description from the README
@@ -116,8 +110,7 @@ const hydrateTemplate = async (template) => {
 
   return { ...template, ...frontmatter, providers };
 };
-
-const hydrateTemplates = async (templatesList) => {
+export const hydrateTemplates = async (templatesList) => {
   let hydratedTemplates = [];
   for (const template of templatesList) {
     const hydrated = await hydrateTemplate(template);
@@ -125,25 +118,3 @@ const hydrateTemplates = async (templatesList) => {
   }
   return hydratedTemplates;
 };
-
-const handler = async (req, res) => {
-  // Get list of repos from community-tempates.md
-  const communityTemplatesFile = await fetchContents(
-    "https://raw.githubusercontent.com/coder/coder/main/examples/templates/community-templates.md"
-  );
-  let repositories = findRepositories(communityTemplatesFile);
-
-  // Add some other repositories :)
-  repositories.push("bpmct/coder-templates");
-  repositories.push("coder/coder");
-  repositories.push("kotx/coder");
-
-  // Recursively find Coder templates in each repository
-  const templates = await findTemplates(repositories);
-
-  const hydratedTemplates = await hydrateTemplates(templates);
-
-  res.status(200).json(hydratedTemplates);
-};
-
-export default handler;
