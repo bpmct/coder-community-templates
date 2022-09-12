@@ -7,12 +7,13 @@ import Container from "@mui/material/Container";
 import { TextField } from "@mui/material";
 import Link from "next/link";
 
+import { getCommunityTemplates } from "../../../utils";
+
 export async function getStaticPaths() {
-  const res = await fetch(`${process.env.ACCESS_URL}/api/templates`);
-  const data = await res.json();
+  const templates = await getCommunityTemplates();
 
   return {
-    paths: data.map((template) => ({
+    paths: templates.map((template) => ({
       params: {
         username: template.publisherDetails.name,
         slug: template.slug,

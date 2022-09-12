@@ -19,15 +19,14 @@ import CardContent from "@mui/material/CardContent";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
+import { getCommunityTemplates } from "../utils";
 
 export async function getStaticProps(context) {
-  const res = await fetch(`${process.env.ACCESS_URL}/api/templates`);
-  // console.log(await res.text())
-  const data = await res.json();
+  const templates = await getCommunityTemplates();
 
   return {
     props: {
-      templates: data,
+      templates,
     },
     revalidate: 300,
   };
