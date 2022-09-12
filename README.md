@@ -6,7 +6,8 @@ First, run the development server:
 
 ```bash
 cat <<EOF > .env.local
-GITHUB_TOKEN= # For sustained API requests, generate a GitHub API token with this scope: public_repo
+ # For sustained API requests, generate a GitHub API token with this scope: public_repo
+GITHUB_TOKEN=
 EOF
 
 npm run dev
