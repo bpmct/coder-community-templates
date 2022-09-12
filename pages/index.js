@@ -6,6 +6,13 @@ import Card from "@mui/material/Card";
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid";
 
+import { useState } from "react";
+
+import InputLabel from "@mui/material/InputLabel";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
+
 import Link from "next/link";
 
 import { Link as MaterialLink } from "@mui/material";
@@ -20,19 +27,47 @@ import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import { getCommunityTemplates } from "../utils";
+import { COOKIE_NAME_PRERENDER_BYPASS } from "next/dist/server/api-utils";
 
 export async function getStaticProps(context) {
   const templates = await getCommunityTemplates();
 
+  // get unique list of providers used
+  let providers = [];
+  for (const template of templates) {
+    providers = providers.concat(
+      template.providers.filter((i) => !providers.includes(i))
+    );
+  }
+
   return {
     props: {
       templates,
+      providers,
     },
     revalidate: 300,
   };
 }
 
-export default function Home({ templates }) {
+export default function Home({ templates, providers }) {
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [narrowProvider, setNarrowProvider] = useState("");
+
+  const toggleNarrowProvider = (p) => {
+    if (narrowProvider == p) {
+      setNarrowProvider("");
+    } else {
+      setNarrowProvider(p);
+    }
+  };
+
+  const filteredTemplates = templates.filter((template) => {
+    if (typeFilter != "all" && template.type != typeFilter) return false;
+    if (narrowProvider != "" && !template.providers.includes(narrowProvider))
+      return false;
+    else return true;
+  });
+
   return (
     <div>
       <Head>
@@ -62,8 +97,43 @@ export default function Home({ templates }) {
           alignItems="stretch"
           alignContent="stretch"
         >
-          {templates &&
-            templates.map((template) => {
+          <Grid item md={3} xs={4}>
+            <FormControl fullWidth>
+              <InputLabel id="demo-simple-select-label">Type</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={typeFilter}
+                label="Type"
+                defaultValue="all"
+                onChange={(event) => {
+                  setTypeFilter(event.target.value);
+                }}
+              >
+                <MenuItem value="all">All</MenuItem>
+                <MenuItem value="official">Official</MenuItem>
+                <MenuItem value="community">Community</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item md={9}>
+            {providers.map((p, i) => {
+              let selected = narrowProvider == "";
+              if (narrowProvider == p) selected = true;
+
+              return (
+                <Chip
+                  key={`provider-${i}`}
+                  style={{ margin: "4px" }}
+                  label={p}
+                  color={selected ? "primary" : "default"}
+                  onClick={() => toggleNarrowProvider(p)}
+                />
+              );
+            })}
+          </Grid>
+          {filteredTemplates &&
+            filteredTemplates.map((template) => {
               return (
                 <Grid item xs={2} md={4} key={template.path}>
                   <Card
@@ -118,20 +188,24 @@ export default function Home({ templates }) {
               );
             })}
         </Grid>
+        <footer style={{ marginTop: 30 }}>
+          <a
+            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Powered by{" "}
+            <span>
+              <Image
+                src="/vercel.svg"
+                alt="Vercel Logo"
+                width={72}
+                height={16}
+              />
+            </span>
+          </a>
+        </footer>
       </Container>
-
-      <footer>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{" "}
-          <span>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
-        </a>
-      </footer>
     </div>
   );
 }
