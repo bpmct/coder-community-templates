@@ -24,12 +24,11 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps(context) {
-  const res = await fetch(`${process.env.ACCESS_URL}/api/templates`);
-  const data = await res.json();
+  const templates = await getCommunityTemplates();
 
   const { username, slug } = context.params;
 
-  const templateDetails = data.find(
+  const templateDetails = templates.find(
     (template) =>
       username == template.publisherDetails.name && slug == template.slug
   );
