@@ -21,7 +21,7 @@ import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 
 export async function getStaticProps(context) {
-  const res = await fetch(`/api/templates`);
+  const res = await fetch(`${process.env.ACCESS_URL}/api/templates`);
   // console.log(await res.text())
   const data = await res.json();
 

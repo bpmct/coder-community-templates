@@ -23,7 +23,7 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps(context) {
-  const res = await fetch(`/api/templates`);
+  const res = await fetch(`${process.env.ACCESS_URL}/api/templates`);
   const data = await res.json();
 
   const { username, slug } = context.params;
