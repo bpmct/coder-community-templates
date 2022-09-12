@@ -5,6 +5,10 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 First, run the development server:
 
 ```bash
+cat <<EOF > .env.local
+GITHUB_TOKEN= # For sustained API requests, generate a GitHub API token with this scope: public_repo
+EOF
+
 npm run dev
 # or
 yarn dev
