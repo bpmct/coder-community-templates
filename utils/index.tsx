@@ -1,8 +1,16 @@
 import parseFrontMatter from "front-matter";
 import parseTerraform from "@evops/hcl-terraform-parser";
 
+interface TemplatePath {
+
+}
+
+interface TemplateDetails extends TemplatePath {
+
+}
+
 // Fetch contents of file
-export const fetchContents = async (url, type) => {
+export const fetchContents = async (url: string, type?: string) => {
   const usernames = await fetch(url, {
     headers: {
       // Authorize with GitHub, just in case
@@ -20,9 +28,9 @@ export const fetchContents = async (url, type) => {
 };
 // Finds repos from Markdown links in text
 // @example: "lorem ipsum [link](https://github.com/coder/coder) long text" -> ["coder/coder"]
-export const findRepositories = (text) => {
+export const findRepositories = (text: string): string[] => {
   const urlRegex = /((?<=\(https:\/\/github.com\/)[^\s]+?(?=\)))/g;
-  return text.match(urlRegex);
+  return text.match(urlRegex);;
 };
 // Gets default branch of repo
 // @example: "repo/repo" -> "main"
@@ -101,7 +109,7 @@ const hydrateTemplate = async (template) => {
     `https://raw.githubusercontent.com/${template.path}/README.md`
   );
   const readmeParsed = parseFrontMatter(readmeRaw);
-  const frontmatter = readmeParsed.attributes;
+  const frontmatter:{} = readmeParsed.attributes;
 
   // Find providers in main.tf, except "coder"
   const mainTFRaw = await fetchContents(
@@ -109,7 +117,7 @@ const hydrateTemplate = async (template) => {
   );
   const mainTFParsed = parseTerraform.parse(mainTFRaw);
   const providers = Object.keys(mainTFParsed.required_providers).filter(
-    ([provider]) => provider != "coder"
+    (provider) => provider != "coder"
   );
 
   // Generate command to use template
@@ -135,7 +143,8 @@ export const getCommunityTemplates = async () => {
   const communityTemplatesFile = await fetchContents(
     "https://raw.githubusercontent.com/coder/coder/main/examples/templates/community-templates.md"
   );
-  let repositories = findRepositories(communityTemplatesFile);
+
+  let repositories: string[] = findRepositories(communityTemplatesFile);
 
   // Add some other repositories :)
   repositories.push("bpmct/coder-templates");
