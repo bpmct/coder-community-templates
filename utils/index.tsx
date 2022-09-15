@@ -1,12 +1,24 @@
 import parseFrontMatter from "front-matter";
 import parseTerraform from "@evops/hcl-terraform-parser";
 
-interface TemplatePath {
-
+interface Template {
+  slug: string,
+  url: string,
+  path: string,
+  repo: string,
+  location?: string,
+  type: "community" | "official"
+  publisherDetails: {
+    name: string,
+    avatar: string,
+    url: string
+  },
 }
 
-interface TemplateDetails extends TemplatePath {
-
+interface TemplateWithMetadata extends Template {
+  name?: string
+  description?: string
+  tags?: string[]
 }
 
 // Fetch contents of file
@@ -42,7 +54,7 @@ const getRepoDetails = async (repo) => {
   return response;
 };
 // Finds Coder templates inside repositories, recursively
-export const findTemplates = async (repositories) => {
+export const findTemplates = async (repositories: string[]): Promise<Template[]> => {
   let files = [];
   for (const repo of repositories) {
     const repoDetails = await getRepoDetails(repo);
@@ -102,7 +114,7 @@ export const findTemplates = async (repositories) => {
 // Fetch the template name, description, tags,
 // providers
 // TODO: also find resources used
-const hydrateTemplate = async (template) => {
+const hydrateTemplate = async (template): Promise<TemplateWithMetadata[]> => {
   // Find the name, tags, description from the README
   // if there is frontmatter
   const readmeRaw = await fetchContents(
